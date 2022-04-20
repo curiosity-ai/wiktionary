@@ -42,13 +42,17 @@ using (var db = RocksDb.Open(options, dbPath, families))
         await DownloadAndPreprocessData(app, dataPath, db, langColumn, wordColumn);
     }
 
-    var languages = new List<string>();
+    var languages = new Dictionary<string, string>();
 
     using (var iterator = db.NewIterator(langColumn))
     {
-        languages.Add(iterator.StringKey());
+        iterator.SeekToFirst();
+        while (iterator.Valid())
+        {
+            languages.Add(iterator.StringKey(), iterator.StringValue());
+            iterator.Next();
+        }
     }
-
 
     app.MapGet("/api/languages", () => languages);
 
