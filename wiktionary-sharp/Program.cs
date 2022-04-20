@@ -5,12 +5,14 @@ using System.Text;
 using System.Text.Json;
 using Wiktionary;
 using RocksDbSharp;
+using Microsoft.AspNetCore.ResponseCompression;
 
 ForceInvariantCultureAndUTF8Output();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddSimpleConsole();
 builder.Logging.AddFilter("Microsoft.AspNetCore.Routing.EndpointMiddleware", LogLevel.Warning);
+builder.Services.AddResponseCompression(options => options.Providers.Add<BrotliCompressionProvider>());
 
 var app = builder.Build();
 app.UseResponseCompression();
