@@ -42,7 +42,7 @@ using (var db = RocksDb.Open(options, dbPath, families))
         await DownloadAndPreprocessData(app, dataPath, db, langColumn, wordColumn);
     }
 
-    app.MapGet("/api/word", (string word, string lang) => db.Get(Encoding.UTF8.GetBytes($"{lang}-{word}"), WordDefinitionListSerializer.Instance, wordColumn));
+    app.MapGet("/api/word", (string word, string lang) => db.Get(Encoding.UTF8.GetBytes($"{lang.Substring(0,100)}-{word.Substring(0, 2048)}"), WordDefinitionListSerializer.Instance, wordColumn));
     app.MapGet("/api/ping", () => "pong");
 
     app.Logger.LogInformation("The app started");
