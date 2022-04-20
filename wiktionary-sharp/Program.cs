@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using Wiktionary;
 using RocksDbSharp;
-using MessagePack;
 
 ForceInvariantCultureAndUTF8Output();
 
@@ -14,6 +13,8 @@ builder.Logging.AddSimpleConsole();
 builder.Logging.AddFilter("Microsoft.AspNetCore.Routing.EndpointMiddleware", LogLevel.Warning);
 
 var app = builder.Build();
+app.UseResponseCompression();
+app.UseMiddleware<AddCacheHeaderMiddleware>();
 
 var dataPath    = app.Configuration["storage"] ?? "data";
 var dbPath      = app.Configuration["db"] ?? "db";
@@ -54,8 +55,7 @@ using (var db = RocksDb.Open(options, dbPath, families))
         }
     }
 
-    app.MapGet("/api/languages", () => languages);
-
+    app.MapGet("/api/languages", () => languages)
     app.MapGet("/api/lang/{lang}/word/{word}", (string word, string lang) => db.Get(Encoding.UTF8.GetBytes($"{Limit(lang,100)}-{Limit(word, 2048)}"), WordDefinitionListSerializer.Instance, wordColumn));
     app.MapGet("/api/ping", () => "pong");
 
