@@ -42,12 +42,28 @@ using (var db = RocksDb.Open(options, dbPath, families))
         await DownloadAndPreprocessData(app, dataPath, db, langColumn, wordColumn);
     }
 
-    app.MapGet("/api/word", (string word, string lang) => db.Get(Encoding.UTF8.GetBytes($"{lang.Substring(0,100)}-{word.Substring(0, 2048)}"), WordDefinitionListSerializer.Instance, wordColumn));
+    var languages = new List<string>();
+
+    using (var iterator = db.NewIterator(langColumn))
+    {
+        languages.Add(iterator.StringKey());
+    }
+
+
+    app.MapGet("/api/languages", () => languages);
+
+    app.MapGet("/api/word", (string word, string lang) => db.Get(Encoding.UTF8.GetBytes($"{Limit(lang,100)}-{Limit(word, 2048)}"), WordDefinitionListSerializer.Instance, wordColumn));
     app.MapGet("/api/ping", () => "pong");
 
     app.Logger.LogInformation("The app started");
 
     await app.RunAsync();
+}
+
+static string Limit(string value, int length)
+{
+    if(value.Length > length) return value.Substring(0, length);
+    return value;
 }
 
 
