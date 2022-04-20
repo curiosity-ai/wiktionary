@@ -55,7 +55,7 @@ using (var db = RocksDb.Open(options, dbPath, families))
         }
     }
 
-    app.MapGet("/api/languages", () => languages)
+    app.MapGet("/api/languages", () => languages);
     app.MapGet("/api/lang/{lang}/word/{word}", (string word, string lang) => db.Get(Encoding.UTF8.GetBytes($"{Limit(lang,100)}-{Limit(word, 2048)}"), WordDefinitionListSerializer.Instance, wordColumn));
     app.MapGet("/api/ping", () => "pong");
 
